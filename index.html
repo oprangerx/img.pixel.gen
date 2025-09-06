@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Coordinate Picker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    #canvas {
+      max-width: 100%;
+      border: 2px solid #333;
+      margin-top: 10px;
+    }
+    #coords {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    input {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>📍 Image Coordinate Picker</h2>
+  <input type="file" id="upload" accept="image/*">
+  <br>
+  <canvas id="canvas"></canvas>
+  <div id="coords">Tap on the image to see X,Y</div>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const coords = document.getElementById('coords');
+    let img = new Image();
+
+    // Handle image upload
+    upload.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        img.onload = () => {
+          // Resize canvas to image
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Get coordinates on click/touch
+    function getCoords(event) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const x = Math.round((event.clientX - rect.left) * scaleX);
+      const y = Math.round((event.clientY - rect.top) * scaleY);
+
+      coords.textContent = `X: ${x}, Y: ${y}`;
+    }
+
+    canvas.addEventListener('click', getCoords);
+    canvas.addEventListener('touchstart', e => {
+      getCoords(e.touches[0]);
+      e.preventDefault();
+    }, { passive: false });
+  </script>
+</body>
+</html>
